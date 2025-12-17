@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的世界服务器 | MyCraft Server</title>
+    <title>矩阵2026 | Minecraft 服务器</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏️</text></svg>">
     <style>
         * {
@@ -37,7 +37,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
+            background-image:
                 linear-gradient(rgba(26, 26, 46, 0.95), rgba(26, 26, 46, 0.98)),
                 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234ade80' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             z-index: -1;
@@ -352,12 +352,12 @@
             font-size: 0.95rem;
         }
 
-        /* Discord 按钮 */
-        .discord-btn {
+        /* QQ群按钮 */
+        .qq-btn {
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            background: #5865F2;
+            background: linear-gradient(135deg, #12B7F5, #0099FF);
             color: white;
             padding: 1rem 2rem;
             border-radius: 12px;
@@ -367,9 +367,9 @@
             margin-top: 2rem;
         }
 
-        .discord-btn:hover {
+        .qq-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(88, 101, 242, 0.4);
+            box-shadow: 0 10px 30px rgba(18, 183, 245, 0.4);
         }
 
         /* 页脚 */
@@ -378,6 +378,16 @@
             padding: 3rem 2rem;
             border-top: 1px solid rgba(74, 222, 128, 0.1);
             color: var(--text-muted);
+        }
+
+        footer .year {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
         }
 
         footer a {
@@ -421,10 +431,23 @@
 <body>
     <div class="bg-pattern"></div>
 
+    <!-- ========== 配置区域（只需修改这里）========== -->
+    <script>
+        const CONFIG = {
+            serverName: '矩阵2026',
+            serverAddress: 'play.matrixmc.top',
+            gameVersion: '1.21.11',           // ← 修改这里更新游戏版本
+            serverType: 'Java',
+            maxPlayers: 500,
+            qqGroup: '218251493',            // ← 修改这里更新QQ群号
+        };
+    </script>
+    <!-- ========== 配置区域结束 ========== -->
+
     <nav>
         <div class="logo">
             <div class="logo-icon">⛏️</div>
-            MyCraft
+            <span id="nav-name"></span>
         </div>
         <ul class="nav-links">
             <li><a href="#features">服务器特色</a></li>
@@ -435,17 +458,17 @@
     </nav>
 
     <section class="hero">
-        <h1>MyCraft Server</h1>
+        <h1 id="hero-title"></h1>
         <p>一个充满创造力与冒险的 Minecraft 社区，在这里建造你的梦想世界</p>
-        
+
         <div class="server-address" onclick="copyAddress()">
-            <code id="address">play.mycraft.example.com</code>
+            <code id="address"></code>
             <button class="copy-btn" id="copyBtn">复制地址</button>
         </div>
 
         <div class="status">
             <span class="status-dot"></span>
-            <span>服务器在线 · Java 1.20.4</span>
+            <span>服务器在线 · <span id="status-version"></span></span>
         </div>
     </section>
 
@@ -490,15 +513,15 @@
         <div class="info-grid fade-in">
             <div class="info-item">
                 <div class="info-label">游戏版本</div>
-                <div class="info-value">1.20.4</div>
+                <div class="info-value" id="info-version"></div>
             </div>
             <div class="info-item">
                 <div class="info-label">服务器类型</div>
-                <div class="info-value">Java</div>
+                <div class="info-value" id="info-type"></div>
             </div>
             <div class="info-item">
                 <div class="info-label">最大玩家</div>
-                <div class="info-value">100</div>
+                <div class="info-value" id="info-players"></div>
             </div>
             <div class="info-item">
                 <div class="info-label">运行时间</div>
@@ -543,7 +566,7 @@
             <div class="step">
                 <div class="step-number">1</div>
                 <h3>准备游戏</h3>
-                <p>确保你安装了 Minecraft Java 版并更新到 1.20.4 版本</p>
+                <p>确保你安装了 Minecraft Java 版并更新到 <span id="step-version"></span> 版本</p>
             </div>
             <div class="step">
                 <div class="step-number">2</div>
@@ -558,24 +581,40 @@
         </div>
 
         <div style="text-align: center;" class="fade-in">
-            <a href="https://discord.gg/your-invite-link" class="discord-btn" target="_blank">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            <a id="qq-link" class="qq-btn" target="_blank">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                 </svg>
-                加入 Discord 社区
+                加入 QQ 群: <span id="qq-number"></span>
             </a>
         </div>
     </section>
 
     <footer>
-        <p>© 2024 MyCraft Server. 由 ❤️ 和 ☕ 驱动</p>
-        <p style="margin-top: 0.5rem;">有问题？联系我们: <a href="mailto:admin@mycraft.example.com">admin@mycraft.example.com</a></p>
+        <div class="year">2026</div>
+        <p>© <span id="footer-name"></span>. 由 ❤️ 和 ☕ 驱动</p>
     </footer>
 
     <script>
+        // 应用配置到页面
+        function applyConfig() {
+            document.getElementById('nav-name').textContent = CONFIG.serverName;
+            document.getElementById('hero-title').textContent = CONFIG.serverName;
+            document.getElementById('address').textContent = CONFIG.serverAddress;
+            document.getElementById('status-version').textContent = `Java ${CONFIG.gameVersion}`;
+            document.getElementById('info-version').textContent = CONFIG.gameVersion;
+            document.getElementById('info-type').textContent = CONFIG.serverType;
+            document.getElementById('info-players').textContent = CONFIG.maxPlayers;
+            document.getElementById('step-version').textContent = CONFIG.gameVersion;
+            document.getElementById('qq-number').textContent = CONFIG.qqGroup;
+            document.getElementById('qq-link').href = `https://qm.qq.com/cgi-bin/qm/qr?k=${CONFIG.qqGroup}`;
+            document.getElementById('footer-name').textContent = CONFIG.serverName;
+            document.title = `${CONFIG.serverName} | Minecraft 服务器`;
+        }
+
         // 复制服务器地址
         function copyAddress() {
-            const address = document.getElementById('address').textContent;
+            const address = CONFIG.serverAddress;
             navigator.clipboard.writeText(address).then(() => {
                 const btn = document.getElementById('copyBtn');
                 btn.textContent = '已复制!';
@@ -613,6 +652,9 @@
                 }
             });
         });
+
+        // 页面加载时应用配置
+        applyConfig();
     </script>
 </body>
 </html>
