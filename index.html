@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的世界服务器 | MyCraft Server</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4ade80;
+            --primary-dark: #22c55e;
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 像素风格背景 */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(26, 26, 46, 0.95), rgba(26, 26, 46, 0.98)),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234ade80' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: -1;
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(22, 33, 62, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #8b5cf6, #4ade80);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero 区域 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(74, 222, 128, 0.3)); }
+            to { filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.4)); }
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        /* 服务器地址复制框 */
+        .server-address {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
+        }
+
+        .server-address:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(74, 222, 128, 0.3);
+        }
+
+        .server-address code {
+            font-size: 1.25rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--primary);
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .copy-btn.copied {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* 状态指示器 */
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 内容区域 */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary);
+        }
+
+        /* 特性卡片 */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(74, 222, 128, 0.1);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(74, 222, 128, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* 服务器信息 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-item {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(74, 222, 128, 0.1);
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* 规则列表 */
+        .rules-list {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(74, 222, 128, 0.1);
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .rule-number {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--bg-dark);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .rule-text {
+            color: var(--text-muted);
+        }
+
+        /* 加入步骤 */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--bg-dark);
+        }
+
+        .step h3 {
+            margin-bottom: 0.75rem;
+        }
+
+        .step p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Discord 按钮 */
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #5865F2;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+
+        .discord-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(88, 101, 242, 0.4);
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(74, 222, 128, 0.1);
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 5rem;
+            }
+
+            .server-address {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            section {
+                padding: 3rem 1rem;
+            }
+        }
+
+        /* 滚动动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <nav>
+        <div class="logo">
+            <div class="logo-icon">⛏️</div>
+            MyCraft
+        </div>
+        <ul class="nav-links">
+            <li><a href="#features">服务器特色</a></li>
+            <li><a href="#info">服务器信息</a></li>
+            <li><a href="#rules">服务器规则</a></li>
+            <li><a href="#join">如何加入</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <h1>MyCraft Server</h1>
+        <p>一个充满创造力与冒险的 Minecraft 社区，在这里建造你的梦想世界</p>
+        
+        <div class="server-address" onclick="copyAddress()">
+            <code id="address">play.mycraft.example.com</code>
+            <button class="copy-btn" id="copyBtn">复制地址</button>
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            <span>服务器在线 · Java 1.20.4</span>
+        </div>
+    </section>
+
+    <section id="features">
+        <h2 class="section-title fade-in">🎮 服务器特色</h2>
+        <div class="features">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🏰</div>
+                <h3>纯净生存</h3>
+                <p>原汁原味的生存体验，无过度修改的游戏机制，让你享受最纯粹的 Minecraft</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🛡️</div>
+                <h3>领地保护</h3>
+                <p>完善的领地系统保护你的建筑和物品，再也不用担心熊孩子破坏</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💰</div>
+                <h3>经济系统</h3>
+                <p>内置经济系统和商店，与其他玩家进行交易，建立你的商业帝国</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎉</div>
+                <h3>社区活动</h3>
+                <p>定期举办各种有趣的社区活动和比赛，赢取丰厚奖励</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🌍</div>
+                <h3>多世界</h3>
+                <p>资源世界定期重置，主世界永久保存，满足你的各种需求</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💬</div>
+                <h3>友好社区</h3>
+                <p>热情友好的玩家社区，新手也能快速融入，找到志同道合的伙伴</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="info">
+        <h2 class="section-title fade-in">📊 服务器信息</h2>
+        <div class="info-grid fade-in">
+            <div class="info-item">
+                <div class="info-label">游戏版本</div>
+                <div class="info-value">1.20.4</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">服务器类型</div>
+                <div class="info-value">Java</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">最大玩家</div>
+                <div class="info-value">100</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">运行时间</div>
+                <div class="info-value">24/7</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="rules">
+        <h2 class="section-title fade-in">📜 服务器规则</h2>
+        <div class="rules-list fade-in">
+            <div class="rule-item">
+                <span class="rule-number">1</span>
+                <span class="rule-text">尊重所有玩家，禁止任何形式的辱骂、歧视或骚扰行为</span>
+            </div>
+            <div class="rule-item">
+                <span class="rule-number">2</span>
+                <span class="rule-text">禁止使用任何作弊客户端、外挂或利用漏洞获取不正当优势</span>
+            </div>
+            <div class="rule-item">
+                <span class="rule-number">3</span>
+                <span class="rule-text">未经允许禁止破坏、偷盗或进入他人领地</span>
+            </div>
+            <div class="rule-item">
+                <span class="rule-number">4</span>
+                <span class="rule-text">禁止刷屏、发送广告或传播不良信息</span>
+            </div>
+            <div class="rule-item">
+                <span class="rule-number">5</span>
+                <span class="rule-text">建筑时请注意美观，禁止建造不雅或冒犯性建筑</span>
+            </div>
+            <div class="rule-item">
+                <span class="rule-number">6</span>
+                <span class="rule-text">服从管理员的合理指示，有问题请理性沟通</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="join">
+        <h2 class="section-title fade-in">🚀 如何加入</h2>
+        <div class="steps fade-in">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>准备游戏</h3>
+                <p>确保你安装了 Minecraft Java 版并更新到 1.20.4 版本</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>添加服务器</h3>
+                <p>在多人游戏中点击"添加服务器"，输入服务器地址</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>开始冒险</h3>
+                <p>点击加入服务器，开始你的 Minecraft 冒险之旅！</p>
+            </div>
+        </div>
+
+        <div style="text-align: center;" class="fade-in">
+            <a href="https://discord.gg/your-invite-link" class="discord-btn" target="_blank">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+                加入 Discord 社区
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2024 MyCraft Server. 由 ❤️ 和 ☕ 驱动</p>
+        <p style="margin-top: 0.5rem;">有问题？联系我们: <a href="mailto:admin@mycraft.example.com">admin@mycraft.example.com</a></p>
+    </footer>
+
+    <script>
+        // 复制服务器地址
+        function copyAddress() {
+            const address = document.getElementById('address').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '已复制!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '复制地址';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
