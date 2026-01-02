@@ -138,7 +138,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
@@ -153,6 +153,29 @@
             font-size: 1.25rem;
             font-family: 'Consolas', 'Monaco', monospace;
             color: var(--primary);
+        }
+
+        .server-address.backup {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .server-address.backup:hover {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .server-address.backup code {
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .address-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .copy-btn {
@@ -173,6 +196,12 @@
         .copy-btn.copied {
             background: var(--accent);
             color: white;
+        }
+
+        .server-address.backup .copy-btn {
+            background: var(--accent);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
         }
 
         /* 状态指示器 */
@@ -435,11 +464,11 @@
     <script>
         const CONFIG = {
             serverName: '矩阵2026',
-            serverAddress: 'play.matrixmc.top',
+            serverAddress: 'mc.matrixmc.top',
+            backupAddress: 'mcx.x3322.net',   // ← 备用地址
             gameVersion: '1.21.11',           // ← 修改这里更新游戏版本
             serverType: 'Java',
-            maxPlayers: 500,
-            qqGroup: '218251493',            // ← 修改这里更新QQ群号
+            qqGroup: '218251493',             // ← 修改这里更新QQ群号
         };
     </script>
     <!-- ========== 配置区域结束 ========== -->
@@ -461,9 +490,20 @@
         <h1 id="hero-title"></h1>
         <p>一个充满创造力与冒险的 Minecraft 社区，在这里建造你的梦想世界</p>
 
-        <div class="server-address" onclick="copyAddress()">
-            <code id="address"></code>
+        <div class="server-address" onclick="copyAddress('main')">
+            <div>
+                <div class="address-label">主地址</div>
+                <code id="address"></code>
+            </div>
             <button class="copy-btn" id="copyBtn">复制地址</button>
+        </div>
+
+        <div class="server-address backup" onclick="copyAddress('backup')">
+            <div>
+                <div class="address-label">备用地址</div>
+                <code id="backup-address"></code>
+            </div>
+            <button class="copy-btn" id="copyBtnBackup">复制</button>
         </div>
 
         <div class="status">
@@ -491,19 +531,19 @@
                 <p>内置经济系统和商店，与其他玩家进行交易，建立你的商业帝国</p>
             </div>
             <div class="feature-card fade-in">
-                <div class="feature-icon">🎉</div>
-                <h3>社区活动</h3>
-                <p>定期举办各种有趣的社区活动和比赛，赢取丰厚奖励</p>
+                <div class="feature-icon">⚔️</div>
+                <h3>公会系统</h3>
+                <p>创建或加入公会，与志同道合的伙伴并肩作战，共同征服这片大陆</p>
             </div>
             <div class="feature-card fade-in">
-                <div class="feature-icon">🌍</div>
-                <h3>多世界</h3>
-                <p>资源世界定期重置，主世界永久保存，满足你的各种需求</p>
+                <div class="feature-icon">🏅</div>
+                <h3>称号系统</h3>
+                <p>完成各种成就解锁专属称号，彰显你的实力与荣耀</p>
             </div>
             <div class="feature-card fade-in">
-                <div class="feature-icon">💬</div>
-                <h3>友好社区</h3>
-                <p>热情友好的玩家社区，新手也能快速融入，找到志同道合的伙伴</p>
+                <div class="feature-icon">🗡️</div>
+                <h3>装备系统</h3>
+                <p>丰富的装备玩法，打造专属神装，让你在冒险中所向披靡</p>
             </div>
         </div>
     </section>
@@ -518,10 +558,6 @@
             <div class="info-item">
                 <div class="info-label">服务器类型</div>
                 <div class="info-value" id="info-type"></div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">最大玩家</div>
-                <div class="info-value" id="info-players"></div>
             </div>
             <div class="info-item">
                 <div class="info-label">运行时间</div>
@@ -591,8 +627,7 @@
     </section>
 
     <footer>
-        <!-- <div class="year">2026</div> -->
-        <p>© <span id="footer-name"></span>.</p>
+        <div class="year">2026</div>
     </footer>
 
     <script>
@@ -601,26 +636,27 @@
             document.getElementById('nav-name').textContent = CONFIG.serverName;
             document.getElementById('hero-title').textContent = CONFIG.serverName;
             document.getElementById('address').textContent = CONFIG.serverAddress;
+            document.getElementById('backup-address').textContent = CONFIG.backupAddress;
             document.getElementById('status-version').textContent = `Java ${CONFIG.gameVersion}`;
             document.getElementById('info-version').textContent = CONFIG.gameVersion;
             document.getElementById('info-type').textContent = CONFIG.serverType;
-            document.getElementById('info-players').textContent = CONFIG.maxPlayers;
             document.getElementById('step-version').textContent = CONFIG.gameVersion;
             document.getElementById('qq-number').textContent = CONFIG.qqGroup;
             document.getElementById('qq-link').href = `https://qm.qq.com/cgi-bin/qm/qr?k=${CONFIG.qqGroup}`;
-            document.getElementById('footer-name').textContent = CONFIG.serverName;
             document.title = `${CONFIG.serverName} | Minecraft 服务器`;
         }
 
         // 复制服务器地址
-        function copyAddress() {
-            const address = CONFIG.serverAddress;
+        function copyAddress(type) {
+            const address = type === 'main' ? CONFIG.serverAddress : CONFIG.backupAddress;
+            const btn = type === 'main' ? document.getElementById('copyBtn') : document.getElementById('copyBtnBackup');
+            const originalText = btn.textContent;
+            
             navigator.clipboard.writeText(address).then(() => {
-                const btn = document.getElementById('copyBtn');
                 btn.textContent = '已复制!';
                 btn.classList.add('copied');
                 setTimeout(() => {
-                    btn.textContent = '复制地址';
+                    btn.textContent = originalText;
                     btn.classList.remove('copied');
                 }, 2000);
             });
